@@ -11,7 +11,7 @@ const adminAuth=(req,res,next)=>{
 
 const userAuth=(req,res,next)=>{
     console.log("user authorization is implemented")
-    const token="xyzzz"
+    const token="xyz"
     const isuserAuthorize=token==="xyz";
     if(!isuserAuthorize){
         res.status(401).send("user is not authorized")

@@ -6,19 +6,27 @@ const app = express();
 
 
 //handle auth middleware for all Get,Post ... requests
-app.use("/admin",adminAuth);
+//app.use("/admin",adminAuth);
 
 app.get("/user",userAuth,(req,res)=>{
-    res.send("user data fetched")
+    
+    throw new Error("something went wrong");
+    //res.send("user data fetched")
 })
 
-app.get("/admin/getAllData",(req,res)=>{
-    res.send("all data send")
+app.use("/",(err,req,res,next)=>{
+    if(err){
+        res.status(500).send("something wrong")
+    }
 })
 
-app.get("/admin/deleteUse",(req,res)=>{
-    res.send("User deleted")
-})
+// app.get("/admin/getAllData",(req,res)=>{
+//     res.send("all data send")
+// })
+
+// app.get("/admin/deleteUse",(req,res)=>{
+//     res.send("User deleted")
+// })
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is listening to port ${process.env.PORT}`);
