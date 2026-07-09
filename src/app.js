@@ -1,21 +1,16 @@
 const express = require("express");
+const {adminAuth,userAuth}=require("./middlewares/auth")
 require("dotenv").config();
 const app = express();
 //wild card route
 
 
 //handle auth middleware for all Get,Post ... requests
-app.use("/admin",(req,res,next)=>{
-    console.log("admin authorization is implemented")
-    const token="xyzzzzzz"
-    const isAdminAuthorize=token==="xyz";
-    if(!isAdminAuthorize){
-        res.status(401).send("admin is not authorized")
-    }else{
-        next();
-    }
-})
+app.use("/admin",adminAuth);
 
+app.get("/user",userAuth,(req,res)=>{
+    res.send("user data fetched")
+})
 
 app.get("/admin/getAllData",(req,res)=>{
     res.send("all data send")
