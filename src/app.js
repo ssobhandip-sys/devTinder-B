@@ -3,17 +3,16 @@ const { adminAuth, userAuth } = require("./middlewares/auth");
 const connectDb = require("./config/database");
 const User =require("./models/user")
 require("dotenv").config();
-const app = express();
 
+const app = express();
+//to convert the json to jsavascript object so that server can understand
+app.use(express.json());
 
 app.post("/signup", async (req,res)=>{
 
-    const user=new User({
-        firstName:"SobhandipS",
-        lastName:"Sam",
-        emailId:"s.sam@gmail.com",
-        password:"admin123"
-    })
+  console.log("request body",req.body)
+
+    const user=new User(req.body);
     await user.save();
     res.send("User added successfully!!")
     try {
