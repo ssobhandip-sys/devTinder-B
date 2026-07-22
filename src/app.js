@@ -10,11 +10,16 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   console.log("request body", req.body);
-
-  const user = new User(req.body);
-  await user.save();
-  res.send("User added successfully!!");
+  const userData=req.body;
   try {
+    const Allow_Creates=["firstName","lastName","emailId","password","gender"];
+    const is_allow_create=Object.keys(userData).every((k)=>{
+      return Allow_Creates.includes(k);
+    })
+    if(!is_allow_create){
+      throw new Error("User creation is not allowed")
+    }
+    const user = new User(userData);
     await user.save();
     res.status(200).send("User added successfully!!");
   } catch (error) {
@@ -58,15 +63,31 @@ app.delete("/user",async (req,res)=>{
 
 })
 
-app.patch("/user",async (req,res)=>{
-  const userId=req.body.userId;
+app.patch("/user/:userId",async (req,res)=>{
+  const userId=req.params.userId;
   const data =req.body;
+
   try {
+    const Allow_Updates=["userId","photoUrl","about","gender","age","skills"];
+    console.log("1")
+    const is_allowed_update=Object.keys(data).every((k)=>{
+      return Allow_Updates.includes(k);
+    })
+    console.log("2")
+    if(!is_allowed_update){
+      throw new Error("User details update not allowed")
+    }
+    console.log("3")
+    if(data.skills.length>10){
+      throw new Error("Skills must be less than or equal to 10.")
+    }
+    console.log("4")
     const user= await User.findByIdAndUpdate(userId,data,{returnDocument:"after",runValidators:true});
     console.log("update user",user)
     res.status(200).send("User updated successfully")
   } catch (err) {
-    res.status(400).send("User update failed",err.message)
+    //console.log(err.message)
+    res.status(400).send("User update failed :"+ err.message)
   }
 
 })
