@@ -1,5 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt=require("jsonwebtoken");
 const { adminAuth, userAuth } = require("./middlewares/auth");
 const connectDb = require("./config/database");
 const User = require("./models/user");
@@ -10,6 +12,7 @@ require("dotenv").config();
 const app = express();
 //to convert the json to jsavascript object so that server can understand
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   console.log("request body", req.body);
@@ -17,21 +20,16 @@ app.post("/signup", async (req, res) => {
   try {
     validateSignupData(req);
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log("passwordHash",passwordHash);
+    console.log("passwordHash", passwordHash);
     const userData = { firstName, lastName, emailId, password: passwordHash };
-    const Allow_Creates = [
-      "firstName",
-      "lastName",
-      "emailId",
-      "password"
-    ];
+    const Allow_Creates = ["firstName", "lastName", "emailId", "password"];
     const is_allow_create = Object.keys(userData).every((k) => {
       return Allow_Creates.includes(k);
     });
     if (!is_allow_create) {
       throw new Error("User creation is not allowed");
     }
-    
+
     const user = new User(userData);
     await user.save();
     res.status(200).send("User added successfully!!");
@@ -45,19 +43,45 @@ app.post("/login", async (req, res) => {
   const { emailId, password } = req.body;
   try {
     //validateSignupData(req);
-    const user=await User.findOne({emailId:emailId});
-    if(!user){
-      throw new Error(`Invalid Credentials!!`)
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error(`Invalid Credentials!!`);
     }
 
-    const isPasswordValid=await bcrypt.compare(password,user.password);
-    if(isPasswordValid){
-      res.status(200).send("Login successfull!!")
-    }else{
-      throw new Error("Invalid Credentials!!")
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      const token=await jwt.sign({_id:user._id},"DevTinder@Sob");
+      console.log("token",token);
+
+      res.cookie("token", token);
+      res.status(200).send("Login successfull!!");
+    } else {
+      throw new Error("Invalid Credentials!!");
     }
   } catch (error) {
     res.status(400).send("Error while login user :" + error.message);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  console.log("/profile")
+  try {
+    const {token} = req.cookies;
+    if(!token){
+      throw new Error("Invalid Token")
+    }
+
+    const decodedMessage= await jwt.verify(token,"DevTinder@Sob");
+    const {_id}=decodedMessage;
+    //console.log("decodedMessage ",decodedMessage)
+    const user=await User.findById({_id})
+
+    if(!user){
+      throw new Error("User doesn't Exists")
+    }
+    res.status(200).send(user);
+  } catch (err) {
+    console.log("Error while fetching the profile",err.message)
   }
 });
 
