@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt=require("jsonwebtoken");
-const { adminAuth, userAuth } = require("./middlewares/auth");
+const { userAuth } = require("./middlewares/auth");
 const connectDb = require("./config/database");
 const User = require("./models/user");
 const { validateSignupData } = require("./utils/validation");
@@ -50,10 +50,10 @@ app.post("/login", async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
-      const token=await jwt.sign({_id:user._id},"DevTinder@Sob");
-      console.log("token",token);
+      const token=await jwt.sign({_id:user._id},"DevTinder@Sob",{expiresIn:"0d"});
+      //console.log("token",token);
 
-      res.cookie("token", token);
+      res.cookie("token", token,{expires:new Date(Date.now()+8*3600000)});
       res.status(200).send("Login successfull!!");
     } else {
       throw new Error("Invalid Credentials!!");
@@ -63,22 +63,10 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile",userAuth, async (req, res) => {
   console.log("/profile")
   try {
-    const {token} = req.cookies;
-    if(!token){
-      throw new Error("Invalid Token")
-    }
-
-    const decodedMessage= await jwt.verify(token,"DevTinder@Sob");
-    const {_id}=decodedMessage;
-    //console.log("decodedMessage ",decodedMessage)
-    const user=await User.findById({_id})
-
-    if(!user){
-      throw new Error("User doesn't Exists")
-    }
+    const user=req.user;
     res.status(200).send(user);
   } catch (err) {
     console.log("Error while fetching the profile",err.message)

@@ -1,23 +1,29 @@
-const adminAuth=(req,res,next)=>{
-    console.log("admin authorization is implemented")
-    const token="xyz"
-    const isAdminAuthorize=token==="xyz";
-    if(!isAdminAuthorize){
-        res.status(401).send("admin is not authorized")
-    }else{
-        next();
+const jwt=require("jsonwebtoken");
+const User =require("../models/user");
+
+const userAuth=async(req,res,next)=>{
+  console.log("userAuth")
+    try {
+        const {token} = req.cookies;
+            if(!token){
+              throw new Error("Invalid Token");
+            }
+            console.log("1")
+            const decodedMessage= await jwt.verify(token,"DevTinder@Sob");
+            const {_id}=decodedMessage;
+            //console.log("decodedMessage ",decodedMessage)
+            const user=await User.findById({_id})
+            console.log("2")
+            if(!user){
+              throw new Error("User doesn't Exists")
+            }
+            console.log("3")
+            req.user=user;
+            next();
+    } catch (err) {
+      console.log("userAuth err ",err.message)
+        res.status(400).send("User Authentication Error "+ err.message);
     }
 }
 
-const userAuth=(req,res,next)=>{
-    console.log("user authorization is implemented")
-    const token="xyz"
-    const isuserAuthorize=token==="xyz";
-    if(!isuserAuthorize){
-        res.status(401).send("user is not authorized")
-    }else{
-        next();
-    }
-}
-
-module.exports={adminAuth,userAuth};
+module.exports={userAuth};
