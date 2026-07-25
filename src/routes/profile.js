@@ -1,12 +1,31 @@
 const express = require("express");
 const profileRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
-
-profileRouter.get("/profile", userAuth, async (req, res) => {
-  console.log("/profile");
+const {validateEditProfileData}=require("../utils/validation")
+profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
     res.status(200).send(user);
+  } catch (err) {
+    console.log("Error while fetching the profile", err.message);
+  }
+});
+
+profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+  try {
+    if(!validateEditProfileData){
+      throw new Error("Invalid edit request")
+    }
+    const loggedInUser = req.user;
+
+    Object.keys(req.body).forEach((key)=> loggedInUser[key]=req.body[key]);
+
+    await loggedInUser.save()
+
+    res.json({
+      message:`${loggedInUser.firstName}, you have edit your profile.`,
+      data:loggedInUser
+    });
   } catch (err) {
     console.log("Error while fetching the profile", err.message);
   }

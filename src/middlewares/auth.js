@@ -22,7 +22,7 @@ const userAuth=async(req,res,next)=>{
             next();
     } catch (err) {
       console.log("userAuth err ",err.message)
-        res.status(400).send("User Authentication Error "+ err.message);
+        res.status(400).send("User Authentication Error :"+ err.message);
     }
 }
 
