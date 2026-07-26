@@ -11,13 +11,38 @@ const validateSignupData = (req) => {
   }
 };
 
-const validateEditProfileData=(req)=>{
-  const allowedEditFields=["firstName","lastName","photoUrl","age","gender","about","skills"];
+const validateEditProfileData = (req) => {
+  try {
+    const allowedEditFields = [
+      "firstName",
+      "lastName",
+      "photoUrl",
+      "age",
+      "gender",
+      "about",
+      "skills",
+    ];
+    const isAllowedEdit = Object.keys(req.body).every((field) =>
+      allowedEditFields.includes(field),
+    );
+    return isAllowedEdit;
+  } catch (err) {
+    console.log("Error in profile edit validation ",err)
+  }
+};
 
-  const isAllowedEdit=Object.keys(req.body).every((field)=>
-    allowedEditFields.includes(field)
+const validateforgetPasswordData = (req) => {
+  const allowedForgetPasswordFields = ["password"];
+
+  const isAllowedForgetPassword = Object.keys(req.body).every((field) =>
+    allowedForgetPasswordFields.includes(field),
   );
-  return isAllowedEdit;
-}
+  console.log("isAllowedForgetPassword", isAllowedForgetPassword);
+  return isAllowedForgetPassword;
+};
 
-module.exports = { validateSignupData,validateEditProfileData };
+module.exports = {
+  validateSignupData,
+  validateEditProfileData,
+  validateforgetPasswordData,
+};

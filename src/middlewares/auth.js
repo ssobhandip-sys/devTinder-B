@@ -8,16 +8,13 @@ const userAuth=async(req,res,next)=>{
             if(!token){
               throw new Error("Invalid Token");
             }
-            console.log("1")
             const decodedMessage= await jwt.verify(token,"DevTinder@Sob");
             const {_id}=decodedMessage;
             //console.log("decodedMessage ",decodedMessage)
-            const user=await User.findById({_id})
-            console.log("2")
+            const user=await User.findById({_id});
             if(!user){
               throw new Error("User doesn't Exists")
             }
-            console.log("3")
             req.user=user;
             next();
     } catch (err) {
