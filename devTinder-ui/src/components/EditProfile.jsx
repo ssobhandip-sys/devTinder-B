@@ -26,7 +26,7 @@ const EditProfile = ({ user }) => {
           withCredentials: true,
         },
       );
-      dispatch(addUser(saveProfile?.data?.data));
+      dispatch(addUser(saveProfileRes?.data?.data));
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
